@@ -25,7 +25,7 @@ public class DBManager {
         }catch (Exception e){
             try {
                 {
-                    PreparedStatement statement = c.prepareStatement("CREATE TABLE `"+TABLE_NAME+"`.`users` ( `id` VARCHAR(255) NOT NULL , `user_fullname` VARCHAR(255) NOT NULL , `user_name` VARCHAR(255) NOT NULL , `money` INT(11) NOT NULL , `bitcoin` INT(11) NOT NULL , `bank` INT(11) NOT NULL , `registration` INT(11) NOT NULL , `experience` INT(11) NOT NULL , `business` INT(11) NOT NULL ) ENGINE = InnoDB;");
+                    PreparedStatement statement = c.prepareStatement("CREATE TABLE `"+TABLE_NAME+"`.`users` ( `id` VARCHAR(255) NOT NULL , `user_fullname` VARCHAR(255) NOT NULL , `user_name` VARCHAR(255) NOT NULL , `money` VARCHAR(255) NOT NULL , `bitcoin` INT(11) NOT NULL , `bank` VARCHAR(255) NOT NULL , `registration` INT(11) NOT NULL , `experience` INT(11) NOT NULL , `business` INT(11) NOT NULL ) ENGINE = InnoDB;");
                     statement.executeUpdate();
                     statement.close();
                 }

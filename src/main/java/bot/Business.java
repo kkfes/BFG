@@ -2,6 +2,7 @@ package bot;
 
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -143,8 +144,8 @@ public class Business {
         }
         if(business!=null){
             if(get(id)==null){
-                if(users.getMoney()>= business.cost){
-                    users.setMoney(users.getMoney()- business.cost);
+                if(users.getMoney().compareTo(new BigInteger(String.valueOf(business.cost))) > 0){
+                    users.setMoney(users.getMoney().divide(new BigInteger(String.valueOf(business.cost))));
                     users.save();
                     business.id=id;
                     business.setUnix(unix);
@@ -205,8 +206,8 @@ public class Business {
             if(num!=0){
                 if(business.workers+num<=450){
                     int cost = business.cost*num;
-                    if(users.getMoney()>=cost){
-                        users.setMoney(users.getMoney()-cost);
+                    if(users.getMoney().compareTo(new BigInteger(String.valueOf(cost))) > 0){
+                        users.setMoney(users.getMoney().divide(new BigInteger(String.valueOf(cost))));
                         users.save();
                         business.setWorkers(business.workers+num);
                         business.save();
@@ -230,7 +231,7 @@ public class Business {
         Business business = get(id);
         if(business!=null){
             business.delete();
-            users.setMoney(users.getMoney()+business.cost);
+            users.setMoney(users.getMoney().add(new BigInteger(String.valueOf(business.cost))));
             users.save();
             return Users.setLink(id)+", вы успешно продали бизнес \""+business.name+"\" \uD83D\uDE0A";
         }else {
@@ -240,23 +241,23 @@ public class Business {
 
     private static String getProfit(long id,String text,long unix){
         Users users = Users.getUser(id);
-        long num = 0;
+        BigInteger num = BigInteger.ZERO;
         try {
-            num = Long.parseLong(text.substring(text.lastIndexOf(" ")).trim());
+            num=new BigInteger(text.substring(text.lastIndexOf(" ")).trim());
         } catch (Exception ignored) {
         }
         Business business = get(id);
-        if(num!=0){
+        if(num.equals(BigInteger.ZERO)){
             if(business!=null){
                 long a = (long) business.profit *business.workers/3600;
                 long sec = (int) (unix-business.unix);
                 if(sec>68400){
                     sec=86400;
                 }
-                long pr = sec *a;
+                BigInteger pr = new BigInteger(String.valueOf(sec *a));
                 business.unix=unix;
                 business.save();
-                users.setMoney((int) (users.getMoney()+pr));
+                users.setMoney(pr.add(users.getMoney()));
                 users.save();
                 return Users.setLink(id)+", вы успешно сняли "+pr+"$ с вашего бизнеса \uD83D\uDE04";
             }else {

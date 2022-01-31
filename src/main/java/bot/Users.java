@@ -2,6 +2,7 @@ package bot;
 
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,9 +16,9 @@ public class Users {
     private final long id;
     private String user_name;
     private String user_fullname;
-    private int money = 0;
+    private BigInteger money = new BigInteger("0");
     private int bitcoin = 0;
-    private int bank = 0;
+    private BigInteger bank = new BigInteger("0");
     private final long registration;
     private int experience = 0;
     private int business = 0;
@@ -53,11 +54,11 @@ public class Users {
         this.user_fullname = user_fullname;
     }
 
-    public int getMoney() {
+    public BigInteger getMoney() {
         return money;
     }
 
-    public void setMoney(int money) {
+    public void setMoney(BigInteger money) {
         this.money = money;
     }
 
@@ -69,11 +70,11 @@ public class Users {
         this.bitcoin = bitcoin;
     }
 
-    public int getBank() {
+    public BigInteger getBank() {
         return bank;
     }
 
-    public void setBank(int bank) {
+    public void setBank(BigInteger bank) {
         this.bank = bank;
     }
 
@@ -116,7 +117,7 @@ public class Users {
     public void add(){
         if(getUser(this.id)==null){
             try {
-                PreparedStatement statement = DBManager.c.prepareStatement("INSERT INTO `users`(`id`, `user_fullname`, `user_name`, `money`, `bitcoin`, `bank`, `registration`, `experience`, `business`, `bonus`, `hall`) VALUES ('"+this.id+"','"+this.user_fullname+"','"+this.user_name+"','"+this.money+"','"+this.bitcoin+"','"+this.bank+"','"+this.registration+"','"+this.experience+"','"+this.business+"','"+0+"','0')");
+                PreparedStatement statement = DBManager.c.prepareStatement("INSERT INTO `users`(`id`, `user_fullname`, `user_name`, `money`, `bitcoin`, `bank`, `registration`, `experience`, `business`, `bonus`, `hall`) VALUES ('"+this.id+"','"+this.user_fullname+"','"+this.user_name+"','"+this.money.toString()+"','"+this.bitcoin+"','"+this.bank.toString()+"','"+this.registration+"','"+this.experience+"','"+this.business+"','"+0+"','0')");
                 statement.executeUpdate();
                 statement.close();
             } catch (SQLException e) {
@@ -127,7 +128,7 @@ public class Users {
 
     public void save(){
         try {
-            PreparedStatement statement = DBManager.c.prepareStatement("UPDATE `users` SET `user_fullname`='"+this.user_fullname+"',`user_name`='"+this.user_name+"',`money`='"+this.money+"',`bitcoin`='"+this.bitcoin+"',`bank`='"+this.bank+"',`registration`='"+this.registration+"',`experience`='"+this.experience+"',`business`='"+this.business+"',`bonus`='"+this.bonus+"',`hall`='"+this.hall+"' WHERE `id`='"+this.id+"'");
+            PreparedStatement statement = DBManager.c.prepareStatement("UPDATE `users` SET `user_fullname`='"+this.user_fullname+"',`user_name`='"+this.user_name+"',`money`='"+this.money.toString()+"',`bitcoin`='"+this.bitcoin+"',`bank`='"+this.bank.toString()+"',`registration`='"+this.registration+"',`experience`='"+this.experience+"',`business`='"+this.business+"',`bonus`='"+this.bonus+"',`hall`='"+this.hall+"' WHERE `id`='"+this.id+"'");
             statement.executeUpdate();
             statement.close();
         }catch (Exception e){
@@ -141,9 +142,9 @@ public class Users {
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()){
                 users = new Users(resultSet.getLong("id"),resultSet.getString("user_name"),resultSet.getString("user_fullname"),resultSet.getLong("registration"),resultSet.getLong("bonus"));
-                users.setMoney(resultSet.getInt("money"));
+                users.setMoney(new BigInteger(resultSet.getString("money")));
                 users.setBitcoin(resultSet.getInt("bitcoin"));
-                users.setBank(resultSet.getInt("bank"));
+                users.setBank(new BigInteger(resultSet.getString("bank")));
                 users.setExperience(resultSet.getInt("experience"));
                 users.setBusiness(resultSet.getInt("business"));
                 users.setHall(resultSet.getLong("hall"));
@@ -196,13 +197,8 @@ public class Users {
             Random rand = new Random();
             int i = rand.nextInt(5);
             if(i==0){
-                int how;
-                if(users.money>=10){
-                    how = (users.money / 2) + (int) (Math.random() * (users.money * 2));
-                }else {
-                    how = 500 + (int) (Math.random() * 1000000);
-                }
-                users.setMoney(users.money+how);
+                int how = 500 + (int) (Math.random() * 1000000);
+                users.setMoney(users.money.add(BigInteger.valueOf(how)));
                 users.save();
                 return setLink(id)+", вам был выдан ежедневный бонус в размере "+how+"$ \uD83D\uDCB0";
             }else if(i==1){
@@ -221,13 +217,8 @@ public class Users {
                 users.save();
                 return setLink(id)+", вам был выдан ежедневный бонус в размере "+how+" рейтинга \uD83D\uDC51";
             }else {
-                int how;
-                if(users.money>=10){
-                    how = (users.money / 2) + (int) (Math.random() * (users.money * 2));
-                }else {
-                    how = 500 + (int) (Math.random() * 1000000);
-                }
-                users.setBank(users.bank+how);
+                int how = 500 + (int) (Math.random() * 1000000);
+                users.setBank(users.bank.add(BigInteger.valueOf(how)));
                 users.save();
                 return setLink(id)+", вам был выдан ежедневный бонус в размере "+how+"$ \uD83D\uDCB0 в банк";
             }
@@ -242,7 +233,7 @@ public class Users {
             users.setHall(unix);
             if(new Random().nextBoolean()){
                 int how = new Random().nextInt(1000000);
-                users.setMoney(users.money+how);
+                users.setMoney(users.money.add(BigInteger.valueOf(how)));
                 users.save();
                 return setLink(id)+", вы успешно ограбили казну. На ваш баланс зачислено "+how+" ✅";
             }else {
@@ -267,8 +258,8 @@ public class Users {
         }
         if(how!=0){
             int cost = (int) (bitcoinCourse*how);
-            if(users.money>=cost){
-                users.setMoney(users.money-cost);
+            if(users.money.compareTo(BigInteger.valueOf(cost))>0){
+                users.setMoney(users.money.add(BigInteger.valueOf(cost)));
                 users.setBitcoin(users.bitcoin+how);
                 users.save();
                 if(new Random().nextBoolean()){
@@ -294,7 +285,7 @@ public class Users {
         }
         int cost = (int) (how*bitcoinCourse);
         if (users.bitcoin >= how) {
-            users.setMoney(users.money + cost);
+            users.setMoney(users.money.add(BigInteger.valueOf(cost)));
             users.setBitcoin(users.bitcoin - how);
             users.save();
             if (new Random().nextBoolean()) {
@@ -338,9 +329,9 @@ public class Users {
         } catch (Exception ignored) {
         }
         if(how!=0){
-            if(users.money>=how){
-                users.setMoney(users.money-how);
-                users.setBank(users.bank+how);
+            if(users.money.compareTo(BigInteger.valueOf(how))>0){
+                users.setMoney(users.money.divide(BigInteger.valueOf(how)));
+                users.setBank(users.bank.add(BigInteger.valueOf(how)));
                 users.save();
                 return setLink(id)+", вы успешно положили на банковский счёт "+how+"$ \uD83D\uDE0A";
             }else {
@@ -359,9 +350,9 @@ public class Users {
         } catch (Exception ignored) {
         }
         if(how!=0){
-            if(users.bank>=how){
-                users.setMoney(users.money+how);
-                users.setBank(users.bank-how);
+            if(users.bank.compareTo(BigInteger.valueOf(how))>0){
+                users.setMoney(users.money.add(BigInteger.valueOf(how)));
+                users.setBank(users.bank.divide(BigInteger.valueOf(how)));
                 users.save();
                 return setLink(id)+", вы успешно сняли с банковского счёта "+how+"$ \uD83D\uDE0A";
             }else {
@@ -386,7 +377,7 @@ public class Users {
         if(how!=0){
             if(users.business>=how){
                 users.setBusiness(users.business-how);
-                users.setMoney(users.money+(how*100000000));
+                users.setMoney(users.money.add(BigInteger.valueOf((how* 100000000L))));
                 users.save();
                 return setLink(id)+", вы понизили количество вашего рейтинга на "+how+"\uD83D\uDC51 за "+how*100000000+"$ \uD83D\uDE04";
             }else {
@@ -449,11 +440,11 @@ public class Users {
         } catch (Exception ignored) {
         }
         if(how!=0){
-            if(users.money>=how){
+            if(users.money.compareTo(BigInteger.valueOf(how))>0){
                 Users users1 = getUser(who);
                 if(users1!=null){
-                    users.setMoney(users.money-how);
-                    users1.setMoney(users1.money+how);
+                    users.setMoney(users.money.divide(BigInteger.valueOf(how)));
+                    users1.setMoney(users1.money.add(BigInteger.valueOf(how)));
                     users.save();
                     users1.save();
                     return "Вы передали "+how+"$ игроку "+setLink(who)+" \uD83D\uDE04";
