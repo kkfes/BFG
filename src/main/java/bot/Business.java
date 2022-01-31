@@ -242,18 +242,18 @@ public class Business {
         Users users = Users.getUser(id);
         long num = 0;
         try {
-            num = Integer.parseInt(text.substring(text.lastIndexOf(" ")).trim());
+            num = Long.parseLong(text.substring(text.lastIndexOf(" ")).trim());
         } catch (Exception ignored) {
         }
         Business business = get(id);
         if(num!=0){
             if(business!=null){
-                int a = business.profit*business.workers/3600;
-                int sec = (int) (unix-business.unix);
+                long a = (long) business.profit *business.workers/3600;
+                long sec = (int) (unix-business.unix);
                 if(sec>68400){
                     sec=86400;
                 }
-                long pr = (long) sec *a;
+                long pr = sec *a;
                 business.unix=unix;
                 business.save();
                 users.setMoney((int) (users.getMoney()+pr));
