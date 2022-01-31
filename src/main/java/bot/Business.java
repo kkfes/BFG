@@ -240,7 +240,7 @@ public class Business {
 
     private static String getProfit(long id,String text,long unix){
         Users users = Users.getUser(id);
-        int num = 0;
+        long num = 0;
         try {
             num = Integer.parseInt(text.substring(text.lastIndexOf(" ")).trim());
         } catch (Exception ignored) {
